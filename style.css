@@ -1,0 +1,67 @@
+/* style.css */
+
+/* Body */
+body {
+    font-family: Arial, sans-serif;
+    color: #333;
+    background-color: #f7f7f7;
+}
+
+/* Sidebar */
+.sidebar .sidebar-content {
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.stButton>button {
+    background-color: #3498db;
+    color: #fff;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.stButton>button:hover {
+    background-color: #2980b9;
+}
+
+/* Form */
+.stTextInput>div>div>input {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.stSelectbox>div>select {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px;
+    font-size: 14px;
+}
+
+/* Tables */
+.stDataFrame>div>div>table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.stDataFrame>div>div>table th,
+.stDataFrame>div>div>table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.stDataFrame>div>div>table th {
+    background-color: #f2f2f2;
+}
+
+/* Footer */
+.stMarkdown>div>p:last-child {
+    margin-bottom: 0;
+}

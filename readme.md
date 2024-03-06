@@ -1,5 +1,7 @@
 # Projet d'Analyse Comparative des Équipes (systémes) de Football
+Vrai base: systeme_foot_database=#
 
+Lanston722 = mot de passe database actiive (test)
 ## Structure de la Base de Données
 
 Pour ce projet, nous avons défini une structure de base de données relationnelle pour stocker les informations sur les équipes de football, les joueurs, les matchs et les tactiques utilisées. Voici un aperçu de la structure :
@@ -11,8 +13,29 @@ Pour ce projet, nous avons défini une structure de base de données relationnel
 2. **Joueur** : Cette table stocke les détails sur chaque joueur, y compris son nom, sa date de naissance, son poste, etc. Chaque joueur est lié à une équipe.
 
 3. **Match** : Cette table enregistre les détails sur chaque match joué, y compris les équipes participantes et les scores.
+Champs: (date, home_team, away_team, home_score,  away_score, tournement, city, country, neutral )
+
+- date : Date du match. Type : timestamp
+- home_team : Nom du club qui reçoit le match. Type : varchar(255)
+- away_team : Nom du club qui envoie le match. Type : varchar(255)
+- home_score : Score à l’entrée en jeu pour le club accueillant. Type : int
+- away_score : Score à l’entrée en jeu pour l’équipe visitante. Type : int
+- tournament : Tournoi ou compétition auquel est associé le match. Type : varchar(255)
+- city : Ville où se déroule le match. Type : varchar(255)
+- country : Pays où se déroule le match. Type : varchar(255)
+- neutral : Indique si le match est neutre (TRUE) ou non (FALSE). Type : tinyint(4)
 
 4. **Tactique** : Cette table contient les schémas tactiques utilisés par les équipes.
+-tactic1premierleague:
+
+les champs :(gameid, team, formation, players)
+- gameid : Identifiant unique du match dans lequel cette tactique a été utilisée. Type : int
+- team : Le nom de l'équipe concernée. Type : varchar(255)
+- formation : La formation utilisée par l'équipe. Type : varchar(255)
+- players : Les joueurs utilisés par l'équipe dans leur formation. Type : text
+
+5. **Player** : Cette table contient des informations sur les joueurs de football (à chercher)
+avec ces champs:(Rk	Player	Nation	Pos	Squad	Comp	Age	Born	MP	Starts	Min	90s	Goals	Shots	SoT	SoT%	G/Sh	G/SoT	ShoDist	ShoFK	ShoPK	PKatt	PasTotCmp	PasTotAtt	PasTotCmp%	PasTotDist	PasTotPrgDist	PasShoCmp	PasShoAtt	PasShoCmp%	PasMedCmp	PasMedAtt	PasMedCmp%	PasLonCmp	PasLonAtt	PasLonCmp%	Assists	PasAss	Pas3rd	PPA	CrsPA	PasProg	PasAtt	PasLive	PasDead	PasFK	TB	Sw	PasCrs	TI	CK	CkIn	CkOut	CkStr	PasCmp	PasOff	PasBlocks	SCA	ScaPassLive	ScaPassDead	ScaDrib	ScaSh	ScaFld	ScaDef	GCA	GcaPassLive	GcaPassDead	GcaDrib	GcaSh	GcaFld	GcaDef	Tkl	TklWon	TklDef3rd	TklMid3rd	TklAtt3rd	TklDri	TklDriAtt	TklDri%	TklDriPast	Blocks	BlkSh	BlkPass	Int	Tkl+Int	Clr	Err	Touches	TouDefPen	TouDef3rd	TouMid3rd	TouAtt3rd	TouAttPen	TouLive	ToAtt	ToSuc	ToSuc%	ToTkl	ToTkl%	Carries	CarTotDist	CarPrgDist	CarProg	Car3rd	CPA	CarMis	CarDis	Rec	RecProg	CrdY	CrdR	2CrdY	Fls	Fld	Off	Crs	TklW	PKwon	PKcon	OG	Recov	AerWon	AerLost	AerWon%)
 
 ### Relations :
 
@@ -22,7 +45,8 @@ Pour ce projet, nous avons défini une structure de base de données relationnel
 
 Cette structure de base de données peut être étendue en fonction des besoins spécifiques du projet.
 
-## Données
+
+
 
 ### Sources de Données :
 
@@ -65,8 +89,6 @@ Nous disposons également d'une base de données SQLite contenant des informatio
 6. **Team_Attributes** : Cette table contient des attributs spécifiques aux équipes.
 7. **Player_Attributes** : Cette table contient des attributs spécifiques aux joueurs.
 
-
-
 Fonctionnalité dans votre application, vous pouvez ajouter un curseur dans l'interface Streamlit permettant à l'utilisateur de sélectionner une période de temps spécifique. Ensuite, vous pouvez utiliser cette période de temps pour filtrer les données des matchs dans votre requête SQL et calculer le système de jeu le plus efficace pour cette période.
 
 # Algorithme de Recommandation du Système de Jeu
@@ -102,7 +124,6 @@ Pour utiliser l'algorithme, suivez les étapes suivantes :
 L'algorithme est implémenté dans un script Python utilisant la bibliothèque Streamlit pour l'interface utilisateur et SQLite pour la gestion des données de la base de données. Les performances des équipes sont calculées en fonction des données extraites de la base de données et des critères d'évaluation définis.
 
 Pour exécuter l'algorithme, assurez-vous d'avoir correctement configuré votre environnement Python avec toutes les dépendances nécessaires et une connexion à la base de données SQLite contenant les données des équipes de football.
-
 
 revoir la connectivité de  la base de données et vérifier que toutes les tables sont bien liées entre elles
 

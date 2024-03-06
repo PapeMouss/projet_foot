@@ -5,8 +5,8 @@
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "foot_systeme_db",
-            "database": "foot_systeme_db",
+            "name": "moussamar",
+            "database": "football_db",
             "username": "moussamar"
         }
     ]
