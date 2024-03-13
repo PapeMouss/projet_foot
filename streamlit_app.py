@@ -3,14 +3,47 @@ import pandas as pd
 import psycopg2
 import matplotlib.pyplot as plt
 import numpy as np
+import mplsoccer
 
-# Configuration de la page
+
 st.set_page_config(
     page_title="BEST LINEUP 🏟️ ️",
     page_icon="⚽️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
+
+
+# bouton de mode sombre dans la (sidebar)
+dark_mode = st.sidebar.checkbox("Mode sombre", value=False)
+if dark_mode:
+    st.write("Mode sombre activé.")
+    # Modifier les couleurs pour le mode sombre
+    st.markdown(
+        """
+        <style>
+        body {
+            background-color: #1f2937;
+            color: white;
+        }
+        .sidebar .sidebar-content {
+            background-color: #111d2e;
+        }
+        .stButton>button {
+            color: #111d2e;
+            background-color: white;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    st.write("Mode sombre désactivé.")
+
+
+
+# Afficher le titre de l'application en haut de la première page
+st.title("BEST LINEUP 🏟️ ️")
 
 # Connexion à la base de données PostgreSQL
 conn = psycopg2.connect(
@@ -19,7 +52,7 @@ conn = psycopg2.connect(
     database='football_db'
 )
 
-# Fonction pour vérifier la connexion à la base de données
+# vérifiecation de la connexion à la base de données
 def check_database_connection():
     try:
         conn.cursor().execute("SELECT 1")
@@ -51,19 +84,42 @@ def run_query(query):
     conn.commit()
     cursor.close()
 
-# Calcul des performances des équipes pendant la période sélectionnée
+# Fonction pour obtenir les dates minimales et maximales disponibles dans la base de données
+def get_min_max_dates():
+    query = """
+        SELECT MIN(date) AS min_date, MAX(date) AS max_date FROM games
+    """
+    result = run_query_select(query)
+    min_date = result['min_date'].iloc[0]
+    max_date = result['max_date'].iloc[0]
+    return min_date, max_date
+
+# Utiliser la fonction pour obtenir les dates minimales et maximales
+min_date, max_date = get_min_max_dates()
+
+# Afficher les dates limites dans l'interface utilisateur
+st.sidebar.subheader('Sélectionner une Période de Temps')
+period_start = st.sidebar.date_input('Date de Début', min_value=min_date, max_value=max_date, value=min_date)
+period_end = st.sidebar.date_input('Date de Fin', min_value=min_date, max_value=max_date, value=max_date)
+
+# Afficher les dates limites sélectionnées
+st.sidebar.write(f"Date de Début sélectionnée: {period_start}")
+st.sidebar.write(f"Date de Fin sélectionnée: {period_end}")
+
+
 def calculate_team_performance(period_start, period_end):
     query = f"""
         SELECT
             homeTeam_id,
             awayTeam_id,
             homeGoals,
-            awaysGoals
+            awaysGoals  -- Utiliser le nom de colonne correct
         FROM
             games
         WHERE
             date BETWEEN '{period_start}' AND '{period_end}'
     """
+
     df_games = run_query_select(query)
 
     # Calcul des performances pour chaque équipe
@@ -105,6 +161,39 @@ def calculate_team_performance(period_start, period_end):
 
     return performances
 
+# Partie affichage des résultats
+def afficher_resultats():
+    st.header('Résultats des performances des équipes')
+
+    # Sélection des dates par l'utilisateur
+    period_start = st.date_input('Date de début')
+    period_end = st.date_input('Date de fin')
+
+    if period_start < period_end:
+        # Calcul des performances des équipes
+        performances = calculate_team_performance(period_start, period_end)
+
+        # Affichage des résultats
+        st.write(pd.DataFrame(performances).T)
+    else:
+        st.error('La date de début doit être antérieure à la date de fin.')
+
+def afficher_terrain():
+    # Créer une figure
+    fig, ax = plt.subplots(figsize=(10, 7))
+    
+    # Initialiser l'objet Pitch (terrain)
+    pitch = mplsoccer.Pitch(pitch_type='statsbomb', orientation='horizontal', pitch_color='green')
+    
+    # Dessiner le terrain
+    pitch.draw(ax=ax)
+    
+    # Ajouter du texte ou d'autres éléments si nécessaire
+    
+    # Afficher le terrain
+    st.pyplot(fig)
+
+
 
 # Partie affichage le meilleur système/période
 def get_best_formation():
@@ -145,6 +234,41 @@ def get_best_formation():
             ax.legend()
 
             st.pyplot(fig)
+
+def afficher_terrain():
+    # Créer une figure
+    fig, ax = plt.subplots(figsize=(10, 7))
+    
+    # Initialiser l'objet Pitch (terrain)
+    pitch = mplsoccer.Pitch(pitch_type='statsbomb', pitch_color='grass', stripe = True)
+    
+    # Dessiner le terrain
+    pitch.draw(ax=ax)
+    
+    # Ajouter du texte ou d'autres éléments si nécessaire
+    
+    # Afficher le terrain
+    st.pyplot(fig)
+
+    # Fonction pour extraire les données des tirs au but
+def extract_shots_data():
+    query = """
+        SELECT positionX, positionY
+        FROM shots
+        WHERE situation = 'OpenPlay'  -- Ajoutez des conditions supplémentaires si nécessaire
+    """
+    df_shots = pd.read_sql(query, conn)
+    return df_shots
+
+# Extraction des données des tirs au but
+df_shots = extract_shots_data()
+
+# Prétraitement des données si nécessaire
+# Par exemple, normalisation des coordonnées des tirs au but
+
+# Affichage des cinq premières lignes du DataFrame pour vérification
+print(df_shots.head())
+
 
 ##############################################################################################
 
@@ -199,6 +323,7 @@ def get_best_formation_for_team():
             recommended_formation = calculate_team_performance(df_joueur)
             st.subheader('Système de Jeu Recommandé')
             st.write(recommended_formation)
+            afficher_terrain
 
     # Affichage des données des joueurs
     st.subheader('Données des Joueurs')
@@ -208,7 +333,7 @@ def get_best_formation_for_team():
 
     with st.expander('Affiner la recherche'):
         # Filtre des joueurs par équipes ou par positions
-        team_filter = st.multiselect('Équipes', sorted([str(i) for i in set(df_joueur['team_id'])]))
+        team_filter = st.multiselect('Équipes', sorted([str(i) for i in set(df_joueur['player_id'])]))
         position_filter = st.multiselect('Positions', ['Attaquant', 'Milieu', 'Défenseur', 'Gardien'])
 
 # Affichage du contenu en fonction de l'option sélectionnée par l'utilisateur
@@ -218,6 +343,9 @@ if option == 'Le Meilleur Système/Période':
 else:
     get_best_formation_for_team()
 
+# Affichage du terrain par défaut
+afficher_terrain()
+
 # Ajout séparation
 st.markdown("---")
 
@@ -225,7 +353,7 @@ st.markdown("---")
 st.markdown(
     """
     ---\n
-    Contactez-nous : marmoussa24@gmail.com\n
-    Suivez-nous sur Twitter : [BestLineUp](https://twitter.com/SystèmeFootball)
+    Contactez-nous : marmoussa24@gmail.com, nicolaspaulperrin@gmail.com\n
+    Suivez-nous sur Twitter : [BestLineUp](https://twitter.com/BestLineUp)
     """
 )
