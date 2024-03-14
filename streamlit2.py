@@ -28,8 +28,8 @@ else:
     st.error("La connexion à la base de données a échoué.")
 
 # Fonction pour charger les données du joueur sélectionné
-def load_player_data(name):
-    query = f"SELECT * FROM players WHERE name = '{name}';"
+def load_player_data(player_id):
+    query = f"SELECT * FROM players WHERE player_id = {player_id};"
     df = pd.read_sql_query(query, conn)
     return df
 
@@ -69,6 +69,29 @@ if problematic_choice == "Goals Analysis":
     goals_per_player = data.groupby("player_id")["goals"].sum()
     st.bar_chart(goals_per_player)
 
+    # Top buteurs
+    st.write("## Top Scorers")
+    top_scorers = data.groupby('player_id')['goals'].sum().sort_values(ascending=False).head(10)
+    st.bar_chart(top_scorers)
+
+    # Buts par match
+    data['goals_per_match'] = data['goals'] / data['appearances']
+    st.write("## Goals per Match")
+    goals_per_match = data.groupby('player_id')['goals_per_match'].mean().sort_values(ascending=False)
+    st.bar_chart(goals_per_match)
+
+    # Répartition des buts par pied préféré
+    st.write("## Goals Distribution by Preferred Foot")
+    goals_by_foot = data.groupby('preferred_foot')['goals'].sum()
+    st.bar_chart(goals_by_foot)
+
+    # Histogramme des buts par minute de jeu
+    st.write("## Goals Distribution by Minute")
+    plt.hist(data['minute'], bins=30, color='skyblue', edgecolor='black')
+    plt.xlabel('Minute')
+    plt.ylabel('Number of Goals')
+    st.pyplot()
+
 elif problematic_choice == "Assists Analysis":
     # Visualisation des passes décisives par joueur
     st.write("## Assists Analysis")
@@ -79,13 +102,13 @@ elif problematic_choice == "Shots Analysis":
     # Visualisation des tirs
     st.write("## Shots Analysis")
     # Utiliser mplsoccer pour visualiser les tirs
-    selected_player = st.sidebar.selectbox("Select a player", data['shooter_id'].unique())
-    filtered_data = data[data['shooter_id'] == selected_player]
+    selected_player = st.sidebar.selectbox("Select a player", data['shooterID'].unique())
+    filtered_data = data[data['shooterID'] == selected_player]
     pitch = mplsoccer.VerticalPitch(half=True)
     fig, ax = pitch.draw()
     for i, shot in filtered_data.iterrows():
-        x = shot['positionX']
-        y = shot['positionY']
+        x = shot['position_x']
+        y = shot['position_y']
         goal = shot['shotResult'] == 'Goal'
         pitch.scatter(x, y, ax=ax, color='red' if goal else 'blue')
     st.pyplot(fig)
@@ -93,7 +116,7 @@ elif problematic_choice == "Shots Analysis":
 elif problematic_choice == "Player Heatmap":
     # Visualisation du heatmap d'un joueur
     st.write("## Player Heatmap")
-    all_players = data['name'].unique()
+    all_players = data['player_id'].unique()
     selected_player = st.sidebar.selectbox("Select a player", all_players)
     player_data = load_player_data(selected_player)
     # Créer un heatmap pour les actions du joueur
@@ -105,17 +128,12 @@ elif problematic_choice == "Player Heatmap":
     # Créer un nouveau graphique
     fig, ax = plt.subplots(figsize=(10, 7))
 
-    # Afficher les passes
-    pitch.lines(player_data['start_x'], player_data['start_y'],
-                player_data['end_x'], player_data['end_y'],
-                ax=ax, color='blue', lw=2, alpha=0.7, zorder=2)
-
     # Afficher les tirs
-    shots = player_data[player_data['lastAction'] == 'shot']
-    pitch.scatter(shots['start_x'], shots['start_y'], ax=ax, color='red', s=100, zorder=3)
+    shots = player_data[player_data['shotResult'] == 'Goal']
+    pitch.scatter(shots['positionX'], shots['positionY'], ax=ax, color='red', s=100, zorder=3)
 
     # Afficher le heatmap
-    pitch.heatmap(player_data['x'], player_data['y'], ax=ax, bins=20, cmap='hot', edgecolors='none')
+    pitch.heatmap(player_data['positionX'], player_data['positionY'], ax=ax, bins=20, cmap='hot', edgecolors='none')
 
     # Afficher le terrain de football
     pitch.draw(ax=ax)

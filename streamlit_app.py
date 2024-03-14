@@ -164,6 +164,8 @@ def calculate_team_performance(period_start, period_end):
     return performances
 
 ##################################################################
+
+
 # Partie affichage des résultats
 def afficher_resultats():
     st.header('Résultats des performances des équipes')
@@ -197,6 +199,8 @@ def afficher_terrain():
     st.pyplot(fig)
 
 #################################################
+
+# Partie affichage le meilleur système/période
 def get_best_formation():
     st.subheader('Sélectionner une Période de Temps')
     date_debut = st.date_input('Date de Début')
@@ -214,7 +218,7 @@ def get_best_formation():
             # Affichage graphique radar pour visualiser les performances des équipes
             fig, ax = plt.subplots(figsize=(8, 6), subplot_kw=dict(polar=True))
 
-            # Récupérer les performances réelles des équipes pour la période sélectionnée
+            # Exemple de données fictives pour les performances des équipes (à remplacer par vos données réelles)
             equipe_ids = list(recommended_formation.keys())
             victoires = [data['pourcentage_victoires'] for data in recommended_formation.values()]
             matchs_nuls = [data['pourcentage_matchs_nuls'] for data in recommended_formation.values()]
@@ -222,7 +226,7 @@ def get_best_formation():
             # Angle pour chaque équipe
             angles = np.linspace(0, 2 * np.pi, len(equipe_ids), endpoint=False).tolist()
 
-            # Créer un graphique radar avec les performances réelles des équipes
+            # Créer un graphique radar
             ax.fill(angles, victoires, color='blue', alpha=0.25, label='Pourcentage Victoires')
             ax.fill(angles, matchs_nuls, color='green', alpha=0.25, label='Pourcentage Matchs Nuls')
             ax.plot(angles, victoires, color='blue', linewidth=2)
@@ -235,6 +239,42 @@ def get_best_formation():
             ax.legend()
 
             st.pyplot(fig)
+
+def afficher_terrain():
+    # Créer une figure
+    fig, ax = plt.subplots(figsize=(10, 7))
+    
+    # Initialiser l'objet Pitch (terrain)
+    pitch = mplsoccer.Pitch(pitch_type='statsbomb', pitch_color='grass', stripe = True)
+    
+    # Dessiner le terrain
+    pitch.draw(ax=ax)
+    
+    # Ajouter du texte ou d'autres éléments si nécessaire
+    
+    # Afficher le terrain
+    st.pyplot(fig)
+
+    # Fonction pour extraire les données des tirs au but
+def extract_shots_data():
+    query = """
+        SELECT positionX, positionY
+        FROM shots
+        WHERE situation = 'OpenPlay'  -- Ajoutez des conditions supplémentaires si nécessaire
+    """
+    df_shots = pd.read_sql(query, conn)
+    return df_shots
+
+# Extraction des données des tirs au but
+df_shots = extract_shots_data()
+
+# Prétraitement des données si nécessaire
+# Par exemple, normalisation des coordonnées des tirs au but
+
+# Affichage des cinq premières lignes du DataFrame pour vérification
+print(df_shots.head())
+
+
 ##############################################################################################
 
 
